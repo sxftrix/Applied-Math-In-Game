@@ -3,6 +3,9 @@ using UnityEngine;
 public class ShapeManager : MonoBehaviour
 {
     private IShapeGenerator currentGenerator;
+    private GameObject currentShapeObject;
+
+    public float rotationSpeed = 30f; // degrees per second for ShapeRotater
 
     public void GeneratePyramid()
     {
@@ -24,23 +27,34 @@ public class ShapeManager : MonoBehaviour
         SetGenerator(new SphereGenerator());
     }
 
-    /* public void GenerateCapsule()
-    {
-        SetGenerator(new CapsuleGenerator());
-    } */
-
     public void EraseShape()
     {
         if (currentGenerator != null)
             currentGenerator.Erase();
+
+        if (currentShapeObject != null)
+            GameObject.Destroy(currentShapeObject);
+
+        currentGenerator = null;
+        currentShapeObject = null;
     }
 
     private void SetGenerator(IShapeGenerator generator)
     {
-        if (currentGenerator != null)
-            currentGenerator.Erase();
+        EraseShape();
 
         currentGenerator = generator;
-        currentGenerator.Generate(Vector3.zero);
+        currentShapeObject = currentGenerator.Generate(Vector3.zero);
+
+        if (currentShapeObject != null)
+        {
+            // Add ShapeRotater if not already added
+            ShapeRotater rotater = currentShapeObject.GetComponent<ShapeRotater>();
+            if (rotater == null)
+                rotater = currentShapeObject.AddComponent<ShapeRotater>();
+
+            // Set rotation speed from manager
+            rotater.rotationSpeed = rotationSpeed;
+        }
     }
 }
